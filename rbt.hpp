@@ -6,7 +6,7 @@
 /*   By: akhalidy <akhalidy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/13 01:13:02 by akhalidy          #+#    #+#             */
-/*   Updated: 2022/04/13 06:04:11 by akhalidy         ###   ########.fr       */
+/*   Updated: 2022/04/13 06:34:42 by akhalidy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -175,6 +175,7 @@ class redBlackTree
 			//* set y
 			y = x->right;
 			//* turn y’s left subtree into x’s right subtree
+			// printTree(_root, nullptr, false);
 			x->right = y->left;
 			if (y->left != NULL)
 				y->left->parent = x;
@@ -311,7 +312,7 @@ class redBlackTree
 						// ? mirror case 3.2.1 && second part of 3.2.2
 						grandParent(k)->color = RED;
 						parent(k)->color = BLACK;
-						left_rotate(grandParent(k));
+						right_rotate(grandParent(k));
 					}
 				}
 			}

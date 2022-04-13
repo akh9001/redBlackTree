@@ -1,6 +1,6 @@
 
 #include "rbt.hpp"
-#include "utility/utility.hpp"
+#include "../utility/utility.hpp"
 // #define RESET   "\033[0m"
 // #define BLACKK   "\033[36m"      /* Black */
 // #define REDD     "\033[31m"      /* Red */
@@ -18,11 +18,11 @@ int main()
 {
 	redBlackTree<int> test;
 
-	test.rb_insert(61);
-	test.rb_insert(85);
-	test.rb_insert(52);
-	test.rb_insert(93);
-	test.rb_insert(100);
+	// test.rb_insert(61);
+	// test.rb_insert(85);
+	// test.rb_insert(52);
+	// test.rb_insert(93);
+	// test.rb_insert(100);
 	// test.rb_insert(87);
 
 	// print_number(test._root->data, test._root->color);
@@ -33,6 +33,22 @@ int main()
 	// std::cout <<  test._root->right->left->left << " " << test._root->right->left->right << std::endl;
 	// print_number(test._root->right->right->data, test._root->right->right->color);
 	// std::cout <<  test._root->right->right->left << " " << test._root->right->right->right << std::endl;
+	
+	test.rb_insert(27);	
+	test.rb_insert(22);	
+	test.rb_insert(26);	
+	test.rb_insert(16);	
+	test.rb_insert(2);	
+	test.rb_insert(17);	
+	test.rb_insert(2135);	
+	test.rb_insert(298);	
+	test.rb_insert(2777);	
+	test.rb_insert(250);	
+	test.rb_insert(201);	
+	test.rb_insert(31);	
+
+	
+	
 	test.printTree(test._root, nullptr, false);
 	return 0;
 }
