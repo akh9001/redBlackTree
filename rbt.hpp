@@ -6,7 +6,7 @@
 /*   By: akhalidy <akhalidy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/13 01:13:02 by akhalidy          #+#    #+#             */
-/*   Updated: 2022/04/13 06:34:42 by akhalidy         ###   ########.fr       */
+/*   Updated: 2022/04/19 14:00:12 by akhalidy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -258,7 +258,10 @@ class redBlackTree
 					// z->is_left = true;
 				}
 				else
+				{
 					y->right = z;
+					// z->is_left = false;
+				}
 			}
 			else
 				z->data = key;
@@ -320,11 +323,159 @@ class redBlackTree
 			// inoderprint(_root);
 		}
 		
+		// * on relie v au parent de v.
+		void	rb_transplant(node_ptr u, node_ptr v)
+		{
+			if (!u->parent)
+				_root = v;
+			else if (u == u->parent->left)
+				u->parent->left = v;
+			else
+				u->parent->right = v;
+			if (v)
+				v->parent = u->parent;
+		}
+//************************************************************************/
+//* 																	  /
+//*																		  /
+//*								Deletion								  /
+//*																		  /
+//*																		  /
+//************************************************************************/		
+		void	rb_delete(value_type key)
+		{
+			node_ptr	z; // the node to be deleted
+			node_ptr	y; // z's successor
+			node_ptr	x; // x : y's child, which takes y's place in the tree.
+						// x : keeps track of y's original position 
+			bool		y_original_color;
+			
+			z = search(_root, key);
+			if (!z)
+				return ;
+			y = z;
+			y_original_color = y->color;
+			if (!z->left)
+			{
+				x = y->right;
+				rb_transplant(z, z->right); // replace z by its right child
+			}
+			else if (!z->right)
+			{
+				x = y->left;
+				rb_transplant(z, z->left); // replace z by its left child
+			}
+			else
+			{
+				y = min(z->right); // y is the successor.
+				y_original_color = y->color;
+				x = y->right;
+				if (y->parent == z)
+					x->parent = y;
+				else
+				{
+					// swap y and its right so y become a leaf node
+					// so it becomes easier to remove z.
+					rb_transplant(y, y->right);
+					y->right = z->right;
+					y->right->parent = y;
+				}
+				rb_transplant(z, y);
+				y->left = z->left;
+				y->left->parent = y;
+				y->color = z->color;
+			}
+			// delete z;
+			// printTree(_root, nullptr, false);
+			// _alloc.destroy(z);
+			// _alloc.deallocate(z, 1);
+			// x = z;
+			if (y_original_color == BLACK)
+			{
+				// fixDelete(x);
+				// * RB-DELETE-FIXUP
+					node_ptr	s;
+					node_ptr	p;
+				
+					std::cout << REDD << y_original_color << " x = " << x->data << RESET << std::endl;
+					while (x != _root && isBlack(x))// x->color == BLACK)
+					{
+				if (x)
+					std::cout << REDD << x->data << RESET << std::endl;
+						// p = parent(x);
+				std::cout << REDD << parent(x)->data<< RESET << std::endl;
+						if (x == parent(x)->left)
+						{
+							s = parent(x)->right;
+							// case 3.1 
+							if (isRED(s)) //s->color == RED)
+							{
+								s->color = BLACK;
+								parent(x)->color = RED;
+								left_rotate(p);
+								// p = parent(x);
+							}
+							// case 3.2
+							if (isBlack(s->left) && isBlack(s->right))//s->left == BLACK && s->right == BLACK)
+							{
+								s->color = RED;
+								x = parent(x);
+							}
+							else if (isBlack(s->right)) //s->right == BLACK) // case 3.3 (s->left == RED & s->right = BLACK) & s is BLACK
+							{
+								s->color = RED;
+								s->left->color = BLACK;
+								right_rotate(s);
+								// p = parent(x);
+							}
+							s->color = parent(x)->color;
+							s->right->color = BLACK;
+							p->color = BLACK;
+							left_rotate(p);
+							x = _root;
+						}
+						else
+						{
+							s = parent(x)->left;
+							if (s->color == RED)
+							{
+								s->color = BLACK;
+								parent(x)->color = RED;
+								right_rotate(parent(x));
+								s = parent(x)->left;
+							}
+				std::cout << REDD << s->data << RESET << std::endl;
+							if (isBlack(s->right) && isBlack(s->left)) // s->right->color == BLACK && s->left->color == BLACK
+							{
+								s->color = RED;
+								x = parent(x);
+							}
+							else if (isBlack(s->left)) //s->left->color == BLACK)
+							{
+								s->right->color = BLACK;
+								s->color = RED;
+								left_rotate(s);
+								s = parent(x)->left;
+							}
+							s->color = parent(x)->color;
+							parent(x)->color = BLACK;
+							s->left->color = BLACK;
+							right_rotate(parent(x));
+							x = _root;
+						}
+						x->color = BLACK;
+					}
+				_alloc.destroy(z);
+				_alloc.deallocate(z, 1);
+			}
+		}
 	// private:
 		key_compare		_less;
 		alloc_type		_alloc;
 		node_ptr		_root;
 		node			_nil;
+		bool			isBlack(node_ptr x) {return (!x || x->color == BLACK);}
+		bool			isRED(node_ptr x) {if (!x) return false; return (x->color == RED);}
 		void			makeBlack(node& x) {x.color = BLACK;}
 		void			makeRed(node& x) {x.color = RED;}
 		bool			isRoot(node_ptr x) {return (x == _root);}
