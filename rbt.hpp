@@ -6,7 +6,7 @@
 /*   By: akhalidy <akhalidy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/13 01:13:02 by akhalidy          #+#    #+#             */
-/*   Updated: 2022/04/19 14:00:12 by akhalidy         ###   ########.fr       */
+/*   Updated: 2022/04/20 13:19:15 by akhalidy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -341,13 +341,15 @@ class redBlackTree
 //*								Deletion								  /
 //*																		  /
 //*																		  /
-//************************************************************************/		
+//************************************************************************/
+	
 		void	rb_delete(value_type key)
 		{
 			node_ptr	z; // the node to be deleted
 			node_ptr	y; // z's successor
 			node_ptr	x; // x : y's child, which takes y's place in the tree.
 						// x : keeps track of y's original position 
+			node_ptr	x_parent;
 			bool		y_original_color;
 			
 			z = search(_root, key);
@@ -358,11 +360,15 @@ class redBlackTree
 			if (!z->left)
 			{
 				x = y->right;
+				if (!x)
+					x_parent = y->parent;
 				rb_transplant(z, z->right); // replace z by its right child
 			}
 			else if (!z->right)
 			{
 				x = y->left;
+				if (!x)
+					x_parent = y->parent;
 				rb_transplant(z, z->left); // replace z by its left child
 			}
 			else
@@ -371,7 +377,11 @@ class redBlackTree
 				y_original_color = y->color;
 				x = y->right;
 				if (y->parent == z)
-					x->parent = y;
+				{
+						// if (!x)
+					x_parent = y;
+					// x->parent = y;
+				}
 				else
 				{
 					// swap y and its right so y become a leaf node
@@ -394,81 +404,100 @@ class redBlackTree
 			{
 				// fixDelete(x);
 				// * RB-DELETE-FIXUP
-					node_ptr	s;
-					node_ptr	p;
-				
-					std::cout << REDD << y_original_color << " x = " << x->data << RESET << std::endl;
-					while (x != _root && isBlack(x))// x->color == BLACK)
+				node_ptr	s;
+				node_ptr	p;
+			
+				// std::cout << REDD << y_original_color << " x = " << x->data << RESET << std::endl;
+				while (x != _root && isBlack(x))// x->color == BLACK)
+				{
+					x_parent = x != NULL ? parent(x) : x_parent;
+					if (x == x_parent->left)
 					{
-				if (x)
-					std::cout << REDD << x->data << RESET << std::endl;
-						// p = parent(x);
-				std::cout << REDD << parent(x)->data<< RESET << std::endl;
-						if (x == parent(x)->left)
+						s = x_parent->right;
+						// case 3.1 
+						if (isRED(s)) //s->color == RED)
 						{
-							s = parent(x)->right;
-							// case 3.1 
-							if (isRED(s)) //s->color == RED)
+							s->color = BLACK;
+							x_parent->color = RED;
+							left_rotate(x_parent);
+							s = x_parent->right;
+						}
+						// case 3.2
+						if (isBlack(s->left) && isBlack(s->right))//s->left == BLACK && s->right == BLACK)
+						{
+							s->color = RED;
+							x = x_parent;
+						}
+						else //s->right == BLACK) // case 3.3 (s->left == RED & s->right = BLACK) & s is BLACK
+						{
+							if (isBlack(s->right))
 							{
-								s->color = BLACK;
-								parent(x)->color = RED;
-								left_rotate(p);
-								// p = parent(x);
-							}
-							// case 3.2
-							if (isBlack(s->left) && isBlack(s->right))//s->left == BLACK && s->right == BLACK)
-							{
-								s->color = RED;
-								x = parent(x);
-							}
-							else if (isBlack(s->right)) //s->right == BLACK) // case 3.3 (s->left == RED & s->right = BLACK) & s is BLACK
-							{
-								s->color = RED;
+								// case 3.3
 								s->left->color = BLACK;
+								s->color = RED;
 								right_rotate(s);
-								// p = parent(x);
+								// p = x_parent;
+								s = x_parent->right;
 							}
-							s->color = parent(x)->color;
-							s->right->color = BLACK;
-							p->color = BLACK;
-							left_rotate(p);
+							// case 3.4
+							s->color = x_parent->color;
+							x_parent->color = BLACK;
+							if (s->right)
+								s->right->color = BLACK;
+							left_rotate(x_parent);
 							x = _root;
 						}
-						else
+					}
+					else
+					{
+						s = x_parent->left;
+						if (s->color == RED)
 						{
-							s = parent(x)->left;
-							if (s->color == RED)
+							s->color = BLACK;
+							x_parent->color = RED;
+							right_rotate(x_parent);
+							s = x_parent->left;
+						}
+						// std::cout << REDD << s->data << RESET << std::endl;
+						if (isBlack(s->right) && isBlack(s->left)) // s->right->color == BLACK && s->left->color == BLACK
+						{
+							s->color = RED;
+							x = x_parent;
+						}
+						else //s->left->color == BLACK)
+						{
+							if (isBlack(s->left))
 							{
-								s->color = BLACK;
-								parent(x)->color = RED;
-								right_rotate(parent(x));
-								s = parent(x)->left;
-							}
-				std::cout << REDD << s->data << RESET << std::endl;
-							if (isBlack(s->right) && isBlack(s->left)) // s->right->color == BLACK && s->left->color == BLACK
-							{
-								s->color = RED;
-								x = parent(x);
-							}
-							else if (isBlack(s->left)) //s->left->color == BLACK)
-							{
+								// case 3.3
 								s->right->color = BLACK;
 								s->color = RED;
 								left_rotate(s);
-								s = parent(x)->left;
+								s = x_parent->left;
 							}
-							s->color = parent(x)->color;
-							parent(x)->color = BLACK;
-							s->left->color = BLACK;
-							right_rotate(parent(x));
+							// case 3.4
+							s->color = x_parent->color;
+							x_parent->color = BLACK;
+							if (s->left)
+								s->left->color = BLACK;
+							right_rotate(x_parent);
 							x = _root;
 						}
-						x->color = BLACK;
 					}
+				}
+				x->color = BLACK;
 				_alloc.destroy(z);
 				_alloc.deallocate(z, 1);
 			}
 		}
+		
+//************************************************************************/
+//* 																	  /
+//*																		  /
+//*								Private : 								  /
+//*																		  /
+//*																		  /
+//************************************************************************/		
+		
 	// private:
 		key_compare		_less;
 		alloc_type		_alloc;
@@ -494,6 +523,13 @@ class redBlackTree
 				return grandParent(x)->right;
 			return grandParent(x)->left;
 		}
+//************************************************************************/
+//* 																	  /
+//*																		  /
+//*							Node structure							  	  /
+//*																		  /
+//*																		  /
+//************************************************************************/		
 
 		private :
 		struct node
