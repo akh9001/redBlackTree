@@ -6,7 +6,7 @@
 /*   By: akhalidy <akhalidy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/13 01:13:02 by akhalidy          #+#    #+#             */
-/*   Updated: 2022/04/20 13:19:15 by akhalidy         ###   ########.fr       */
+/*   Updated: 2022/04/21 15:03:53 by akhalidy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -347,7 +347,7 @@ class redBlackTree
 		{
 			node_ptr	z; // the node to be deleted
 			node_ptr	y; // z's successor
-			node_ptr	x; // x : y's child, which takes y's place in the tree.
+			node_ptr	x; // x : y's child, which takes y's place in the tree. Before being deleted.
 						// x : keeps track of y's original position 
 			node_ptr	x_parent;
 			bool		y_original_color;
@@ -355,6 +355,13 @@ class redBlackTree
 			z = search(_root, key);
 			if (!z)
 				return ;
+			if (z == _root && !z->right && !z->left)
+			{
+				_root = NULL;
+				_alloc.destroy(z);
+				_alloc.deallocate(z, 1);
+				return;
+			}
 			y = z;
 			y_original_color = y->color;
 			if (!z->left)
@@ -376,6 +383,8 @@ class redBlackTree
 				y = min(z->right); // y is the successor.
 				y_original_color = y->color;
 				x = y->right;
+				if (!x)
+					x_parent = y->parent;
 				if (y->parent == z)
 				{
 						// if (!x)
@@ -406,9 +415,10 @@ class redBlackTree
 				// * RB-DELETE-FIXUP
 				node_ptr	s;
 				node_ptr	p;
-			
-				// std::cout << REDD << y_original_color << " x = " << x->data << RESET << std::endl;
-				while (x != _root && isBlack(x))// x->color == BLACK)
+			// double black accurs when you move or remove a black node y,
+			// we transfer its blakness to x (y's original position).
+			// In other words, the extra black on a node is reflected in x's pointing to the node rather than in the color attribute.
+				while (x != _root && isBlack(x)) //? x always point to a nonroot, doubly black node : whithin the while loop 
 				{
 					x_parent = x != NULL ? parent(x) : x_parent;
 					if (x == x_parent->left)
