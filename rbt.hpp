@@ -6,7 +6,7 @@
 /*   By: akhalidy <akhalidy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/13 01:13:02 by akhalidy          #+#    #+#             */
-/*   Updated: 2022/04/21 15:03:53 by akhalidy         ###   ########.fr       */
+/*   Updated: 2022/04/21 18:59:30 by akhalidy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -100,7 +100,7 @@ class redBlackTree
 		
 		node_ptr	search(node_ptr x, value_type key)
 		{
-			if (x == NULL || x->data == key) // (!_less(x->data, key) && !_less(key, x->data))) //x.data == key
+			if (x == NULL || x->data == key)
 				return x;
 			if (_less(key, x->data))
 				return search(x->left, key);
@@ -123,6 +123,17 @@ class redBlackTree
 				std::cout << "#############################\n";
 			}
 		}
+		
+		// bool	blackNode(node_ptr x)
+		// {
+		// 	if (node == NULL)
+		// 		return 1;
+		// 	int right_black_nodes += blackNode(node->right);
+		// 	int leftt_black_nodes += blackNode(node->left);
+		// 	if (x.black)
+		// 		left_black_nodes++;
+		// 	return (right_black_nodes == leftt_black_nodes);
+		// }
 		
 		node_ptr	min(node_ptr x)
 		{
@@ -175,17 +186,13 @@ class redBlackTree
 			//* set y
 			y = x->right;
 			//* turn y’s left subtree into x’s right subtree
-			// printTree(_root, nullptr, false);
 			x->right = y->left;
 			if (y->left != NULL)
 				y->left->parent = x;
 			//* link x’s parent to y
 			y->parent = x->parent;
 			if (x->parent == NULL)
-			{
 				this->_root = y;
-				// _nil.left = root;
-			}
 			else if (x == x->parent->left)
 				x->parent->left = y;
 			else
@@ -205,10 +212,7 @@ class redBlackTree
 				y->right->parent = x;
 			y->parent = x->parent;
 			if (x->parent == NULL)
-			{
 				this->_root = y;
-				// _nil.left = root;
-			}
 			else if (x == x->parent->right)
 				x->parent->right = y;
 			else
@@ -234,17 +238,18 @@ class redBlackTree
 		
 		node_ptr		bst_insert(value_type key)
 		{
-			/*node_ptr*/ node_ptr	x = _root;
-			/*node_ptr*/ node_ptr	y = NULL;
-			/*node_ptr*/ node_ptr	z = search(_root, key);
-			/*node_ptr*/ node_ptr	parent;
+			node_ptr	x = _root;
+			node_ptr	y = NULL;
+			node_ptr	z = search(_root, key);
+			node_ptr	parent;
 			
 			if (!z)
 			{
 				while (x != NULL)
 				{
 					y = x;
-					if (key < x->data)
+					// if (key < x->data)
+					if (_less(key, x->data))
 						x = x->left;
 					else
 						x = x->right;
@@ -252,7 +257,8 @@ class redBlackTree
 				z = create_node(key, y);
 				if (y == NULL) //? should I : _nil.left = z ??
 					_root = z;
-				else if (key < y->data)
+				// else if (key < y->data)
+				else if (_less(key, y->data))
 				{
 					y->left = z;
 					// z->is_left = true;
@@ -273,10 +279,7 @@ class redBlackTree
 			node_ptr k = bst_insert(key);
 			
 			if (!_root)
-			{
 				_root = k;
-				// _nil.left = k;
-			}
 			while (k != _root && parent(k)->color == RED)
 			{
 				if (uncle(k) && uncle(k)->color == RED)
@@ -294,11 +297,9 @@ class redBlackTree
 						if (k == parent(k)->left)
 						{
 							// ? case 3.2.2 :: fist part
-								k = k->parent;//parent(k);
+								k = k->parent;
 								right_rotate(k);
 						}
-						// if (key == 87)
-						// 	inoderprint(_root);
 						// ? case 3.2.1 && second part of 3.2.2
 						grandParent(k)->color = RED;
 						parent(k)->color = BLACK;
@@ -320,7 +321,6 @@ class redBlackTree
 				}
 			}
 			_root->color = BLACK;
-			// inoderprint(_root);
 		}
 		
 		// * on relie v au parent de v.
@@ -386,11 +386,7 @@ class redBlackTree
 				if (!x)
 					x_parent = y->parent;
 				if (y->parent == z)
-				{
-						// if (!x)
 					x_parent = y;
-					// x->parent = y;
-				}
 				else
 				{
 					// swap y and its right so y become a leaf node
@@ -405,19 +401,17 @@ class redBlackTree
 				y->color = z->color;
 			}
 			// delete z;
-			// printTree(_root, nullptr, false);
 			// _alloc.destroy(z);
 			// _alloc.deallocate(z, 1);
-			// x = z;
 			if (y_original_color == BLACK)
 			{
 				// fixDelete(x);
 				// * RB-DELETE-FIXUP
 				node_ptr	s;
 				node_ptr	p;
-			// double black accurs when you move or remove a black node y,
-			// we transfer its blakness to x (y's original position).
-			// In other words, the extra black on a node is reflected in x's pointing to the node rather than in the color attribute.
+			//? double black accurs when you move or remove a black node y,
+			//? we transfer its blakness to x (y's original position).
+			//? In other words, the extra black on a node is reflected in x's pointing to the node rather than in the color attribute.
 				while (x != _root && isBlack(x)) //? x always point to a nonroot, doubly black node : whithin the while loop 
 				{
 					x_parent = x != NULL ? parent(x) : x_parent;
@@ -425,7 +419,7 @@ class redBlackTree
 					{
 						s = x_parent->right;
 						// case 3.1 
-						if (isRED(s)) //s->color == RED)
+						if (isRED(s))
 						{
 							s->color = BLACK;
 							x_parent->color = RED;
@@ -433,12 +427,12 @@ class redBlackTree
 							s = x_parent->right;
 						}
 						// case 3.2
-						if (isBlack(s->left) && isBlack(s->right))//s->left == BLACK && s->right == BLACK)
+						if (isBlack(s->left) && isBlack(s->right))
 						{
 							s->color = RED;
 							x = x_parent;
 						}
-						else //s->right == BLACK) // case 3.3 (s->left == RED & s->right = BLACK) & s is BLACK
+						else
 						{
 							if (isBlack(s->right))
 							{
@@ -446,7 +440,6 @@ class redBlackTree
 								s->left->color = BLACK;
 								s->color = RED;
 								right_rotate(s);
-								// p = x_parent;
 								s = x_parent->right;
 							}
 							// case 3.4
@@ -468,13 +461,12 @@ class redBlackTree
 							right_rotate(x_parent);
 							s = x_parent->left;
 						}
-						// std::cout << REDD << s->data << RESET << std::endl;
-						if (isBlack(s->right) && isBlack(s->left)) // s->right->color == BLACK && s->left->color == BLACK
+						if (isBlack(s->right) && isBlack(s->left))
 						{
 							s->color = RED;
 							x = x_parent;
 						}
-						else //s->left->color == BLACK)
+						else
 						{
 							if (isBlack(s->left))
 							{
